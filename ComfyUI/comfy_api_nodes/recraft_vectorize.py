@@ -117,3 +117,12 @@ class RecraftVectorizeNode:
 
         print(f"SVG saved to: {svg_file_path}")
         return (svg_file_path,)
+    
+
+NODE_CLASS_MAPPINGS = {
+    "RecraftVectorizeNode": RecraftVectorizeNode,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "RecraftVectorizeNode": "Recraft Vectorize Image to File",
+}
