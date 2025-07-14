@@ -1,12 +1,10 @@
-# ComfyUI/comfy_api_nodes/recraft_vectorize.py
+from __future__ import annotations
 import hashlib
 import os
 import torch
 import numpy as np
 from PIL import Image
 from comfy_api_nodes.nodes_recraft import handle_recraft_file_request
-
-from __future__ import annotations
 from inspect import cleandoc
 from typing import Optional
 from comfy.utils import ProgressBar
@@ -84,7 +82,7 @@ class RecraftVectorizeNode:
         if pil_image.width > resolution_limit or pil_image.height > resolution_limit:
             print(f"Image resolution ({pil_image.width}x{pil_image.height}) exceeds the recommended limit of {resolution_limit}px. This may result in longer processing times.")
 
-        # API Call to Recraft
+        # API call to recraft
         print("Contacting Recraft API to vectorize image")
         try:
             # reusing handle_recraft_file_request function to send the image
@@ -103,7 +101,7 @@ class RecraftVectorizeNode:
             print(f"Recraft API Error: {e}")
             raise Exception(f"Failed to vectorize image. Reason: {e}") from e
 
-        # Save the SVG content to a file
+        # save SVG content to a file
         image_hash = hashlib.sha256(pil_image.tobytes()).hexdigest()
         filename = f"vectorized_{image_hash[:16]}.svg"
 
