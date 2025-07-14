@@ -51,6 +51,8 @@ class RecraftVectorizeNode:
         if image.shape[0] == 0:
             return ("",)
 
+        if not os.path.exists(output_path):
+                os.makedirs(output_path, exist_ok=True)
         pbar = ProgressBar(image.shape[0])
         all_file_paths = []
 
@@ -81,10 +83,6 @@ class RecraftVectorizeNode:
             # Save the SVG content to a file
             image_hash = hashlib.sha256(pil_image.tobytes()).hexdigest()
             filename = f"vectorized_{image_hash[:16]}.svg"
-
-            if not os.path.exists(output_path):
-                os.makedirs(output_path, exist_ok=True)
-
             svg_file_path = os.path.join(output_path, filename)
 
             with open(svg_file_path, "w", encoding="utf-8") as f:
