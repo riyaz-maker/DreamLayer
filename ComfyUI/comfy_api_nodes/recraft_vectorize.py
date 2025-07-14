@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class RecraftVectorizeNode:
     """
-    Vectorizes raster images using the Recraft API and saves them as pure-vector SVG files.
+    Vectorizes a batch of raster images using the Recraft API and saves them as pure-vector SVG files.
     """
     DESCRIPTION = cleandoc(__doc__ or "")
     RETURN_TYPES = ("STRING",)
@@ -37,7 +37,7 @@ class RecraftVectorizeNode:
                  "output_path": (
                     IO.STRING, {
                         "default": "output/vectorized_svgs",
-                        "tooltip": "Directory where the output SVG files will be saved."
+                        "tooltip": "The directory where the output SVG files will be saved."
                     }
                 ),
             },
@@ -51,17 +51,20 @@ class RecraftVectorizeNode:
         if image.shape[0] == 0:
             return ("",)
 
+        # Create the output directory once
         if not os.path.exists(output_path):
-                os.makedirs(output_path, exist_ok=True)
+            os.makedirs(output_path, exist_ok=True)
+
         pbar = ProgressBar(image.shape[0])
         all_file_paths = []
 
-        # loop through each image in the batch for processing
+        # Loop through each image in the batch for processing
         for i in range(image.shape[0]):
             img_tensor_single = image[i].unsqueeze(0)
             pbar.update(1)
-
-            pil_image = Image.fromarray(np.clip(255. * img_tensor_single.cpu().numpy().squeeze(), 0, 255).astype(np.uint8))
+            image_hash = hashlib.sha256(img_tensor_single.cpu().numpy().tobytes()).hexdigest()
+            img_array = np.clip(255. * img_tensor_single.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
+            pil_image = Image.fromarray(img_array)
 
             if pil_image.width > resolution_limit or pil_image.height > resolution_limit:
                 logger.warning(f"Image {i+1} resolution ({pil_image.width}x{pil_image.height}) exceeds the recommended limit of {resolution_limit}px.")
@@ -81,7 +84,6 @@ class RecraftVectorizeNode:
                 raise ConnectionError(f"Failed to vectorize image {i+1}. Reason: {e}") from e
 
             # Save the SVG content to a file
-            image_hash = hashlib.sha256(pil_image.tobytes()).hexdigest()
             filename = f"vectorized_{image_hash[:16]}.svg"
             svg_file_path = os.path.join(output_path, filename)
 
@@ -94,7 +96,7 @@ class RecraftVectorizeNode:
         return ("\n".join(all_file_paths),)
 
 
-# Mapping for node class names to their respective classes
+# Node class mappings
 NODE_CLASS_MAPPINGS = {
     "RecraftVectorizeNode": RecraftVectorizeNode,
 }
